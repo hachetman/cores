@@ -7,6 +7,7 @@ pipeline {
                 echo 'Cmake..'
                 sh 'cmake .'
             }
+        }
         stage('Simulation: Uart') {
             steps {
                 sh 'make uart_sim'
