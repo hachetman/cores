@@ -13,5 +13,15 @@ pipeline {
                 sh 'make uart_sim'
             }            
         }
+        stage('Prove: Uart') {
+            steps {
+                sh 'make uart_sim'
+            }            
+        }
+        stage('Coverage: Uart') {
+            steps {
+                sh 'make uart_sim'
+            }            
+        }        
     }
 }

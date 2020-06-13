@@ -31,4 +31,4 @@ endif()
 # Create a new executable target that will contain all your sources
 
 add_subdirectory(sim)
-
+add_subdirectory(formal)

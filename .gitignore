@@ -1,1 +1,3 @@
 build
+formal/uart_formal_cvr
+formal/uart_formal_prf
