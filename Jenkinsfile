@@ -10,17 +10,17 @@ pipeline {
         }
         stage('Simulation: Uart') {
             steps {
-                sh 'make uart_sim'
+                sh 'make uart.sim'
             }            
         }
         stage('Prove: Uart') {
             steps {
-                sh 'make uart_sim'
+                sh 'make uart.proove'
             }            
         }
         stage('Coverage: Uart') {
             steps {
-                sh 'make uart_sim'
+                sh 'make uart.cover'
             }            
         }        
     }

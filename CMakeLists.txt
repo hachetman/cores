@@ -27,8 +27,17 @@ find_package(verilator HINTS $ENV{VERILATOR_ROOT} ${VERILATOR_ROOT})
 if (NOT verilator_FOUND)
   message(FATAL_ERROR "Verilator was not found. Either install it, or set the VERILATOR_ROOT environment variable")
 endif()
-
+include(cmake/yosys_formal.cmake)
 # Create a new executable target that will contain all your sources
 
 add_subdirectory(sim)
-add_subdirectory(formal)
+#add_subdirectory(formal)
+
+yosys_formal_project(
+    TARGET uart
+    HDL_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/hdl"
+  )
+yosys_formal_project(
+    TARGET uart2
+    HDL_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/hdl"
+  )
