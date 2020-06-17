@@ -17,10 +17,10 @@ macro(yosys_formal_project)
   add_custom_target(${FORMAL_TARGET}.smt2
     COMMAND yosys -s ${FORMAL_TARGET}.ys)
   add_custom_target(${FORMAL_TARGET}.proove
-    COMMAND yosys-smtbmc -g --dump-vcd ${FORMAL_TARGET}.vcd ${FORMAL_TARGET}.smt2
+    COMMAND yosys-smtbmc -g --dump-vcd ${FORMAL_TARGET}_proove.vcd ${FORMAL_TARGET}.smt2
     DEPENDS ${FORMAL_TARGET}.smt2)
   add_custom_target(${FORMAL_TARGET}.cover
     COMMAND echo ${CMAKE_CURRENT_BINARY_DIR}
-    COMMAND yosys-smtbmc -c --dump-vcd ${FORMAL_TARGET}.vcd ${FORMAL_TARGET}.smt2 
+    COMMAND yosys-smtbmc -c --dump-vcd ${FORMAL_TARGET}_cover.vcd ${FORMAL_TARGET}.smt2 
     DEPENDS ${FORMAL_TARGET}.smt2)
 endmacro()
