@@ -12,7 +12,7 @@ macro(verilator_sim_project)
     "${multiValueArgs}" ${ARGN} )
   message("Creating Simulation for Target '${SIM_TARGET}'")
   message("Creating Simulation in '${SIM_SCRIPT_DIR}'")
-  add_executable(${SIM_TARGET}.sim ../sim/${SIM_TARGET}_sim.cpp)
+  add_executable(${SIM_TARGET}.sim ${SIM_SCRIPT_DIR}/../sim/${SIM_TARGET}_sim.cpp)
   add_custom_command(TARGET ${SIM_TARGET}.sim POST_BUILD
     COMMAND ./${SIM_TARGET}.sim +trace)
   verilate(uart.sim COVERAGE TRACE
