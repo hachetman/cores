@@ -62,17 +62,22 @@ void Testbench<MODULE>::register_tick(std::function<void() > agent) {
 
 template <class MODULE>
 void Testbench<MODULE>::tick(void) {
-  // this shall me the main sim routine
-  main_time ++;
-  if (*dut_clk == 0) {
-    for( std::list<std::function<void()>>::iterator f = agent_list.begin(); f != agent_list.end(); ++f ){
-      (*f)();
-    }
-  }
- *dut_clk = !*dut_clk;
- trace->dump(main_time);
- dut->eval();
-  
+  // this shall be the main sim routine
+
+  *dut_clk = 0;
+  main_time ++;    
+
+  dut->eval();
+  trace->dump(main_time);    
+
+  main_time ++;  
+  *dut_clk = 1;
+  dut->eval();
+  for( std::list<std::function<void()>>::iterator f = agent_list.begin(); f != agent_list.end(); ++f ){
+    (*f)();
+  }      
+  trace->dump(main_time);
+
 }
 
 #endif /*TESTBENCH_HPP */

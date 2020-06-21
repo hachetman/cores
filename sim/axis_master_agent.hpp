@@ -3,37 +3,36 @@
 #include "verilated.h"
 #include <queue>
 #include <iostream>
-template <size_t size = 16>
+template <size_t size = 16, class T= CData>
 class axis_master_agent {
 public:
   CData *valid;
   CData *ready;
-  WData *data;
-  std::queue<WData> data_queue;
+  T *data;
+  std::queue<T> data_queue;
   void tick();
-  int bind_ports(CData *valid, CData *ready, WData *data);
-  int queue_data(WData *data);
+  int bind_ports(CData *valid, CData *ready, T *data);
+  int queue_data(T *data);
 };
 
-template <size_t size>
-void axis_master_agent<size>::tick(void) {
-  std::cout << "master_agent::tick" << std::endl;
+template <size_t size, class T>
+void axis_master_agent<size, T>::tick(void) {
   if (data_queue.size() != 0) {
-    std::cout << "Something in the FIFO" << std::endl;
     *this->valid = 1;
+    for (int i = 0; i < size; i++) {
+      data[i] = data_queue.front();
+    }
     if (*this->ready == 1) {
-      for (int i = 0; i < size; i++) {
-        data[i] = data_queue.front();
-        data_queue.pop();
-      }
+      data_queue.pop();
+      std::cout << "popping one element" << std::endl;
     }
   } else {
     *this->valid = 0;
   }
 };
 
-template <size_t size>
-int axis_master_agent<size>::bind_ports(CData *valid, CData *ready, WData *data) {
+template <size_t size, class T>
+int axis_master_agent<size, T>::bind_ports(CData *valid, CData *ready, T *data) {
   std::cout << "Binding the ports" << std::endl;
   this->valid = valid;
   this->ready = ready;
@@ -44,8 +43,8 @@ int axis_master_agent<size>::bind_ports(CData *valid, CData *ready, WData *data)
   }
   return 0;
 };
-template <size_t size>
-int axis_master_agent<size>::queue_data(WData *data) {
+template <size_t size, class T>
+int axis_master_agent<size, T>::queue_data(T *data) {
   std::cout << "Queuing data to be send" << std::endl;
   for (int i = 0; i < size ; i++) {
     data_queue.push(data[i]);
