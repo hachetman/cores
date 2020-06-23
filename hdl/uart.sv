@@ -1,6 +1,6 @@
 module uart #
 (parameter BAUD        = 115200,
- parameter CLK_FREQ    = 600000)
+ parameter CLK_FREQ    = 1152000)
 (
  input  wire         clk_i,
 // AXI STREAM SLAVE INTERFACE

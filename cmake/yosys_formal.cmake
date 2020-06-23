@@ -21,6 +21,6 @@ macro(yosys_formal_project)
     DEPENDS ${FORMAL_TARGET}.smt2)
   add_custom_target(${FORMAL_TARGET}.cover
     COMMAND echo ${CMAKE_CURRENT_BINARY_DIR}
-    COMMAND yosys-smtbmc -c -t 100 --dump-vcd ${FORMAL_TARGET}_cover.vcd ${FORMAL_TARGET}.smt2 
+    COMMAND yosys-smtbmc -c -t 150 --dump-vcd ${FORMAL_TARGET}_cover.vcd ${FORMAL_TARGET}.smt2
     DEPENDS ${FORMAL_TARGET}.smt2)
 endmacro()

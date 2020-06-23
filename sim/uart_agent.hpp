@@ -19,7 +19,7 @@ private:
   int rx_data_cnt= 0;
   int uart_clk_ena;
   int clk_cnt = 0;
-  int clocks_per_baud = 5;
+  int clocks_per_baud = 10;
   void tx_tick();
   void rx_tick();
   void uart_clk_ena_tick();
