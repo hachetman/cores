@@ -20,6 +20,7 @@ module uart #
 
 
 localparam CLK_PER_BAUD = CLK_FREQ / BAUD;
+localparam CLK_PER_BAUD_DIV_2 = CLK_FREQ / BAUD / 2;
 
 enum {IDLE, START, TRANSMIT, RECEIVE, AXI_SEND, STOP} uart_tx_state, uart_rx_state;
 initial uart_tx_state = IDLE;
@@ -29,18 +30,27 @@ reg [7:0]  tx_data;
 reg [7:0]  rx_data;
 reg [2:0]  tx_bit_cnt;
 reg [2:0]  rx_bit_cnt;
-reg [15:0] baud_cnt = 0;
-reg baud_clk_ena;
+reg [15:0] tx_baud_cnt = 0;
+reg        tx_baud_clk_ena;
+reg        tx_baud_rst;
 
+reg [15:0] rx_baud_cnt = 0;
+reg        rx_baud_clk_ena;
+reg        rx_baud_clk_ena_div;
+reg        rx_baud_rst;
 assign m_axis_tdata_o = rx_data;
 
+
 always @(posedge clk_i)
-  begin: BAUD_CLK_ENA
-  baud_cnt <= baud_cnt + 1;
-      baud_clk_ena <= 0;
-      if (baud_cnt == CLK_PER_BAUD[15:0]) begin
-          baud_cnt <= 0;
-          baud_clk_ena <= 1;
+  begin: TX_BAUD_CLK_ENA
+  tx_baud_cnt <= tx_baud_cnt + 1;
+      tx_baud_clk_ena <= 0;
+      if (tx_baud_rst) begin
+          tx_baud_cnt <= 0;
+      end
+      if (tx_baud_cnt == CLK_PER_BAUD[15:0]) begin
+          tx_baud_clk_ena <= 1;
+          tx_baud_cnt <= 0;
       end
   end
 
@@ -49,19 +59,21 @@ always @(posedge clk_i)
   begin : TX_STATE_MACHINE
       case(uart_tx_state)
           IDLE: begin
+              tx_baud_rst <= 1'b1;
               if (s_axis_tvalid_i == 1'b1) begin
                   uart_tx_state <= START;
                   tx_data <= s_axis_tdata_i;
+                  tx_baud_rst <= 1'b0;
               end
           end
           START: begin
               tx_bit_cnt <= 'h0;
-              if (baud_clk_ena) begin
+              if (tx_baud_clk_ena) begin
                   uart_tx_state <= TRANSMIT;
               end
           end
           TRANSMIT: begin
-              if (baud_clk_ena) begin
+              if (tx_baud_clk_ena) begin
                   tx_bit_cnt <= tx_bit_cnt + 1;
                   tx_data <= {tx_data[0], tx_data[7:1]};
                   if (tx_bit_cnt == 'h7) begin
@@ -70,7 +82,7 @@ always @(posedge clk_i)
               end
           end
           STOP: begin
-              if (baud_clk_ena) begin
+              if (tx_baud_clk_ena) begin
                   uart_tx_state <= IDLE;
               end
           end
@@ -99,30 +111,51 @@ always @ (*)
     endcase
 end
 
-
+always @(posedge clk_i)
+  begin: RX_BAUD_CLK_ENA
+      rx_baud_cnt <= rx_baud_cnt + 1;
+      rx_baud_clk_ena <= 0;
+      if (rx_baud_cnt == CLK_PER_BAUD[15:0]) begin
+          rx_baud_cnt <= 0;
+          rx_baud_clk_ena <= 1;
+      end
+      if (rx_baud_cnt == CLK_PER_BAUD_DIV_2[15:0]) begin
+          rx_baud_clk_ena_div <= 1;
+      end
+      if (rx_baud_rst) begin
+          rx_baud_cnt <= 0;
+      end
+  end
 always @(posedge clk_i)
   begin : RX_STATE_MACHINE
       case(uart_rx_state)
           IDLE: begin
-              if (baud_clk_ena) begin
-                  if (uart_rx_i == 0) begin
-                      uart_rx_state <= RECEIVE;
-                      rx_bit_cnt <= 0;
-                      rx_data <= 0;
-                  end
+              rx_baud_rst <= 1'b1;
+              if (uart_rx_i == 0) begin
+                  uart_rx_state <= START;
+                  rx_bit_cnt <= 0;
+                  rx_data <= 0;
+              end
+          end
+          START: begin
+              rx_baud_rst <= 1'b0;
+              if (rx_baud_clk_ena_div) begin
+                  uart_rx_state <= RECEIVE;
+                  rx_baud_rst <= 1'b1;
               end
           end
           RECEIVE: begin
-              if (baud_clk_ena) begin
+              rx_baud_rst <= 1'b0;
+              if (rx_baud_clk_ena) begin
                   rx_bit_cnt <= rx_bit_cnt + 1;
-                  rx_data <= {rx_data[6:0], uart_rx_i};
+                  rx_data <= {uart_rx_i, rx_data[7:1]};
                   if (rx_bit_cnt == 'h7) begin
                       uart_rx_state <= STOP;
                   end
               end
           end
           STOP: begin
-              if (baud_clk_ena) begin
+              if (rx_baud_clk_ena) begin
                   if (uart_rx_i == 1'b1) begin
                       uart_rx_state <= AXI_SEND;
                   end else begin
