@@ -1,6 +1,6 @@
 module uart #
 (parameter BAUD        = 115200,
- parameter CLK_FREQ    = 12000000)
+ parameter CLK_FREQ    = 600000)
 (
  input  wire         clk_i,
 // AXI STREAM SLAVE INTERFACE
@@ -19,17 +19,17 @@ module uart #
 );
 
 
-localparam CLK_PER_BAUD = 5;
+localparam CLK_PER_BAUD = CLK_FREQ / BAUD;
 
 enum {IDLE, START, TRANSMIT, RECEIVE, AXI_SEND, STOP} uart_tx_state, uart_rx_state;
 initial uart_tx_state = IDLE;
 initial uart_rx_state = IDLE;
 
-reg [7:0] tx_data;
-reg [7:0] rx_data;
-reg [2:0] tx_bit_cnt;
-reg [2:0] rx_bit_cnt;
-reg [7:0] baud_cnt = 0;
+reg [7:0]  tx_data;
+reg [7:0]  rx_data;
+reg [2:0]  tx_bit_cnt;
+reg [2:0]  rx_bit_cnt;
+reg [15:0] baud_cnt = 0;
 reg baud_clk_ena;
 
 assign m_axis_tdata_o = rx_data;
@@ -38,7 +38,7 @@ always @(posedge clk_i)
   begin: BAUD_CLK_ENA
   baud_cnt <= baud_cnt + 1;
       baud_clk_ena <= 0;
-      if (baud_cnt == CLK_PER_BAUD) begin
+      if (baud_cnt == CLK_PER_BAUD[15:0]) begin
           baud_cnt <= 0;
           baud_clk_ena <= 1;
       end
