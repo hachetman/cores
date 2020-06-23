@@ -10,7 +10,7 @@ module uart #
 
 // AXI STREAM MASTER INTERFACE
  output wire [7:0]   m_axis_tdata_o,
- output wire         m_axis_tvalid_o,
+ output reg          m_axis_tvalid_o,
  input  wire         m_axis_tready_i,
 
 // UART interface
